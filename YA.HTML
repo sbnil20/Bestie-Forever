@@ -1,0 +1,203 @@
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mobile Video Gallery with Animated RGB Frame</title>
+<style>
+body { 
+    font-family: Arial, sans-serif; 
+    margin:0; padding:0; 
+    background:#fafafa; 
+    -webkit-user-select:none; -moz-user-select:none; -ms-user-select:none; user-select:none; 
+    overflow-x:hidden;
+}
+
+/* Animated RGB ribbons */
+.ribbon {
+    position: fixed;
+    background: linear-gradient(
+        0deg,
+        red, orange, yellow, green, blue, indigo, violet, red
+    );
+    background-size: 100% 600%; /* taller gradient for smooth movement */
+    animation: rainbowMove 3s linear infinite;
+    z-index: 10000;
+    box-shadow: 0 0 12px rgba(255,255,255,0.6);
+}
+
+/* Top */
+.ribbon-top { top:0; left:0; width:100%; height:6px; border-radius:0 0 3px 3px; }
+/* Bottom */
+.ribbon-bottom { bottom:0; left:0; width:100%; height:6px; border-radius:3px 3px 0 0; }
+/* Left */
+.ribbon-left { top:0; left:0; width:6px; height:100%; border-radius:0 3px 3px 0; }
+/* Right */
+.ribbon-right { top:0; right:0; width:6px; height:100%; border-radius:3px 0 0 3px; }
+
+@keyframes rainbowMove {
+    0% { background-position: 0 0; }
+    100% { background-position: 0 100%; }
+}
+
+/* Video gallery */
+.video-gallery { 
+    max-width: 1000px; 
+    margin: 20px auto; 
+    display:flex; 
+    flex-wrap:wrap; 
+    justify-content:center; 
+    gap:15px; 
+}
+
+/* Video card */
+.video-card { 
+    position:relative; 
+    width:240px; 
+    cursor:pointer; 
+    border-radius:12px; 
+    overflow:hidden; 
+    background:#fff; 
+    box-shadow:0 4px 10px rgba(0,0,0,0.1); 
+    text-align:center; 
+    transition:transform 0.2s; 
+}
+.video-card:hover { transform:scale(1.03); }
+.video-card img.thumbnail { width:100%; height:180px; object-fit:cover; display:block; }
+.video-card h3 { margin:8px 0; font-size:16px; color:#333; }
+.play-icon { width:50px; height:50px; position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); opacity:0.8; transition:opacity 0.2s; pointer-events:none; }
+
+/* Video overlay */
+.video { 
+    display:none; 
+    position:fixed; 
+    top:0; left:0; 
+    width:100%; height:100%; 
+    background:rgba(0,0,0,0.85); 
+    justify-content:center; 
+    align-items:center; 
+    z-index:1000; 
+}
+.video video { 
+    max-width:90%; 
+    max-height:80%; 
+    border-radius:12px; 
+    box-shadow:0 8px 20px rgba(0,0,0,0.5); 
+}
+.close-btn { 
+    position:absolute; 
+    top:20px; 
+    right:40px; 
+    font-size:40px; 
+    color:#fff; 
+    cursor:pointer; 
+}
+
+/* MOBILE STYLING */
+@media screen and (max-width:800px) { 
+    .video-card { width:48%; }
+    .video-card img.thumbnail { height:200px; }
+}
+@media screen and (max-width:500px) { 
+    .video-card { width:95%; }
+    .video-card img.thumbnail { height:250px; }
+}
+</style>
+</head>
+<body>
+
+<!-- Animated 4-side RGB ribbons -->
+<div class="ribbon ribbon-top"></div>
+<div class="ribbon ribbon-bottom"></div>
+<div class="ribbon ribbon-left"></div>
+<div class="ribbon ribbon-right"></div>
+
+<div class="video-gallery">
+    <div class="video-card" data-video="video1.mp4">
+        <img class="thumbnail" src="thumbnail1.jpg" alt="">
+        <h3>🩷UQT</h3>
+        <img class="play-icon" src="play-icon.png" alt="">
+    </div>
+    <div class="video-card" data-video="video2.mp4">
+        <img class="thumbnail" src="thumbnail2.jpeg" alt="">
+        <h3>🩷UQT</h3>
+        <img class="play-icon" src="play-icon.png" alt="">
+    </div>
+    <div class="video-card" data-video="video3.mp4">
+        <img class="thumbnail" src="thumbnail3.png" alt="">
+        <h3>🩷UQT</h3>
+        <img class="play-icon" src="play-icon.png" alt="">
+    </div>
+    <div class="video-card" data-video="video4.mp4">
+        <img class="thumbnail" src="thumbnail4.jpg" alt="">
+        <h3>🤭</h3>
+        <img class="play-icon" src="play-icon.png" alt="">
+    </div>
+</div>
+
+<div class="video">
+    <video controls class="videoPlayer"></video>
+    <div class="close-btn">+</div>
+</div>
+
+<script>
+const videoContainer = document.querySelector('.video');
+const videoPlayer = document.querySelector('.videoPlayer');
+const closeBtn = document.querySelector('.close-btn');
+const playIcons = document.querySelectorAll('.video-card .play-icon');
+
+// Play video dynamically
+document.querySelectorAll('.video-card').forEach(card => {
+    card.addEventListener('click', () => {
+        const file = card.dataset.video;
+        if(!file) return;
+
+        // Hide all play icons
+        playIcons.forEach(icon => icon.style.display='none');
+
+        // Set video source and play
+        videoPlayer.src = file;
+        videoPlayer.load();
+        videoPlayer.play();
+
+        // Show overlay and disable background scroll
+        videoContainer.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+    });
+});
+
+// Close video
+closeBtn.addEventListener('click', () => {
+    videoPlayer.pause();
+    videoPlayer.src='';
+    videoContainer.style.display='none';
+
+    // Restore play icons and scroll
+    playIcons.forEach(icon => icon.style.display='block');
+    document.body.style.overflow='auto';
+});
+
+// Disable right-click
+document.addEventListener('contextmenu', e => e.preventDefault());
+
+// Disable common shortcuts (F12, Ctrl+Shift+I/J/C, Ctrl+U/S/P, Ctrl+C/X)
+document.addEventListener('keydown', e => {
+    const key = e.key.toUpperCase();
+    const ctrl = e.ctrlKey || e.metaKey;
+    const shift = e.shiftKey;
+
+    if(
+        key === 'F12' ||
+        (ctrl && shift && ['I','J','C'].includes(key)) ||
+        (ctrl && ['U','S','P','C','X'].includes(key))
+    ){
+        e.preventDefault();
+        e.stopPropagation();
+    }
+});
+
+// Disable right-click on video specifically
+videoPlayer.addEventListener('contextmenu', e => e.preventDefault());
+</script>
+
+</body>
+</html>
